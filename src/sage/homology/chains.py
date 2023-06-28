@@ -656,6 +656,36 @@ class Cochains(CellComplexReference, CombinatorialFreeModule):
                 sage: l12.is_cocycle(), l12.is_coboundary()
                 (True, False)
             """
+            def is_sorted(test_list):
+                flag = 0
+                new_list = test_list[:]
+                new_list.sort()
+                if (new_list == test_list):
+                    flag = 1
+                return flag
+            
+            #Define a function to determine the sign of a permutation (give as a list) by sorting it and counting the swaps
+            def perm_parity(lst):
+                '''\
+                Given a permutation of the items in a list, 
+                returns its parity (or sign): +1 for even parity; -1 for odd.
+                '''
+                parity = 1
+                while not is_sorted(lst):
+                    for i in range(len(lst)-1):
+                        #print(lst)
+                        if lst[i]> lst[i+1]:
+                            parity *= -1
+                            lst[i],lst[i+1] = lst[i+1],lst[i]
+                return parity
+            def cup_eval(alpha, n, beta, m, sigma):
+                # n and m are the degrees of alpha and beta
+                #Simplex sigma can be given as a list
+                if len(sigma)!=n+m+1:
+                    raise Exception("Simplex is not compatible with cochain degrees")
+                ac = alpha.eval(perm_parity(list(sigma[0:n+1]))*X.n_chains(n).basis()[Simplex(sigma[0:n+1])])
+                bc = beta.eval(perm_parity(list(sigma[n:n+m+1]))*X.n_chains(m).basis()[Simplex(sigma[n:n+m+1])])
+                return ac*bc
             if not isinstance(cochain.parent(), Cochains):
                 raise ValueError('argument must be a cochain')
             if cochain.parent().cell_complex() != self.parent().cell_complex():
